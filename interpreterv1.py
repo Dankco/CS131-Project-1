@@ -160,7 +160,6 @@ class ObjectDefinition:
 
     def __execute_while_statement(self, statement):
         condition = self.__evaluate_expression(statement[1])
-        print(condition, type(condition))
         if type(condition) is not bool:
             self.super.error(ErrorType(1))
             sys.exit()
@@ -196,7 +195,6 @@ class ObjectDefinition:
     def __convert_string_with_line_number_to_type(self, value):
         if type(value) != StringWithLineNumber:
             return value
-        print(value)
         if value.startswith('"'):
             return str(value)
         elif value == self.super.TRUE_DEF:
@@ -211,9 +209,8 @@ class ObjectDefinition:
     def __evaluate_expression(self, expression):
         if type(expression) != list:
             expr = expression
-            if self.fields.get(expression):
+            if expression in self.fields:
                 expr = self.fields[expression]
-            print(expr)
             return self.__convert_string_with_line_number_to_type(expr)
         op1 = self.__evaluate_expression(expression[1])
         op1 = self.__convert_string_with_line_number_to_type(op1)
@@ -221,7 +218,7 @@ class ObjectDefinition:
         op2 = self.__convert_string_with_line_number_to_type(op2)
         t1 = type(op1)
         t2 = type(op2)
-        print(op1, t1, isinstance(op1, int), op2, t2, isinstance(op2, int))
+        # print(op1, t1, isinstance(op1, int), op2, t2, isinstance(op2, int))
         operator = expression[0]
         if operator == '+':
             if (not isinstance(op1, int) or not isinstance(op2, int)) and (
