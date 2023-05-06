@@ -1,5 +1,5 @@
 from intbase import InterpreterBase, ErrorType
-from bparser import BParser
+from bparser import BParser, StringWithLineNumber
 import sys
 
 
@@ -76,12 +76,8 @@ class ObjectDefinition:
         return result
 
     def add_field(self, f_name, f_value):
-        if f_value[0] == '\"':
-            self.fields[f_name] = str(f_value)
-        elif f_value == self.super.TRUE_DEF or f_value == self.super.FALSE_DEF:
-            self.fields[f_name] = bool(f_value)
-        else:
-            self.fields[f_name] = int(f_value)
+        val = self.__convert_string_with_line_number_to_type(f_value)
+        self.fields[f_name] = val
 
     def add_method(self, method_name, method):
         self.methods[method_name] = method
@@ -92,7 +88,6 @@ class ObjectDefinition:
     # runs/interprets the passed-in statement until completion and
     # gets the result, if any
     def __run_statement(self, statement):
-        result = []
         if statement[0] == self.super.PRINT_DEF:
             result = self.__execute_print_statement(statement)
         elif (
@@ -164,11 +159,21 @@ class ObjectDefinition:
         return
 
     def __execute_while_statement(self, statement):
-        print(statement)
+        condition = self.__evaluate_expression(statement[1])
+        print(condition, type(condition))
+        if type(condition) is not bool:
+            self.super.error(ErrorType(1))
+            sys.exit()
+        while condition:
+            self.__run_statement(statement[2])
+            condition = self.__evaluate_expression(statement[1])
+            if type(condition) is not bool:
+                self.super.error(ErrorType(1))
+                sys.exit()
         return
 
     def __execute_if_statement(self, statement):
-        if type(self.__evaluate_expression(statement[1])) != bool:
+        if self.__evaluate_expression(statement[1]) is not bool:
             self.super.error(ErrorType(1))
             sys.exit()
         if self.__evaluate_expression(statement[1]):
@@ -188,27 +193,35 @@ class ObjectDefinition:
             sys.exit()
         self.fields[statement[1]] = val
 
+    def __convert_string_with_line_number_to_type(self, value):
+        if type(value) != StringWithLineNumber:
+            return value
+        print(value)
+        if value.startswith('"'):
+            return str(value)
+        elif value == self.super.TRUE_DEF:
+            return True
+        elif value == self.super.FALSE_DEF:
+            return False
+        elif value == self.super.NULL_DEF:
+            return None
+        else:
+            return int(value)
+
     def __evaluate_expression(self, expression):
         if type(expression) != list:
             expr = expression
             if self.fields.get(expression):
                 expr = self.fields[expression]
-            if isinstance(expr, bool):
-                return bool(expr)
-            elif isinstance(expr, int):
-                return int(expr)
-            elif expr.startswith('"'):
-                return expr
-            elif expr == self.super.TRUE_DEF:
-                return True
-            elif expr == self.super.FALSE_DEF:
-                return False
-            return int(expr)
+            print(expr)
+            return self.__convert_string_with_line_number_to_type(expr)
         op1 = self.__evaluate_expression(expression[1])
-        t1 = type(op1)
+        op1 = self.__convert_string_with_line_number_to_type(op1)
         op2 = self.__evaluate_expression(expression[2])
+        op2 = self.__convert_string_with_line_number_to_type(op2)
+        t1 = type(op1)
         t2 = type(op2)
-        # print(op1, t1, isinstance(op1, int), op2,t2, isinstance(op1, str))
+        print(op1, t1, isinstance(op1, int), op2, t2, isinstance(op2, int))
         operator = expression[0]
         if operator == '+':
             if (not isinstance(op1, int) or not isinstance(op2, int)) and (
@@ -248,7 +261,7 @@ class ObjectDefinition:
             if (
                 t1 != t2
                 or not isinstance(op1, int)
-                or not isinstance(op1, str)
+                and not isinstance(op1, str)
             ):
                 self.super.error(ErrorType(1))
                 sys.exit()
@@ -257,7 +270,7 @@ class ObjectDefinition:
             if (
                 t1 != t2
                 or not isinstance(op1, int)
-                or not isinstance(op1, str)
+                and not isinstance(op1, str)
             ):
                 self.super.error(ErrorType(1))
                 sys.exit()
@@ -266,7 +279,7 @@ class ObjectDefinition:
             if (
                 t1 != t2
                 or not isinstance(op1, int)
-                or not isinstance(op1, str)
+                and not isinstance(op1, str)
             ):
                 self.super.error(ErrorType(1))
                 sys.exit()
@@ -275,7 +288,7 @@ class ObjectDefinition:
             if (
                 t1 != t2
                 or not isinstance(op1, int)
-                or not isinstance(op1, str)
+                and not isinstance(op1, str)
             ):
                 self.super.error(ErrorType(1))
                 sys.exit()
@@ -284,7 +297,7 @@ class ObjectDefinition:
             if (
                 t1 != t2
                 or not isinstance(op1, int)
-                or not isinstance(op1, str)
+                and not isinstance(op1, str)
             ):
                 self.super.error(ErrorType(1))
                 sys.exit()

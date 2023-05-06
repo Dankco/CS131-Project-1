@@ -128,6 +128,7 @@ def generate_test_suite_v1():
             "test_inputi",
             "test_recursion1",
             "test_set_field",
+            "test_while"
         ],
         ["test_if", "test_incompat_operands1"],
     )
