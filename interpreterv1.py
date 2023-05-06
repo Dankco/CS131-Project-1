@@ -223,6 +223,8 @@ class ObjectDefinition:
             return True
         elif value == self.super.FALSE_DEF:
             return False
+        elif value == self.super.NULL_DEF:
+            return None
         else:
             return int(value)
 
@@ -240,9 +242,14 @@ class ObjectDefinition:
             return res
         op1 = self.__evaluate_expression(expression[1])
         op1 = self.__convert_string_with_line_number_to_type(op1)
+        t1 = type(op1)
+        if operator == '!':
+            if t1 is not bool:
+                self.super.error(ErrorType(1))
+                sys.exit()
+            return not t1
         op2 = self.__evaluate_expression(expression[2])
         op2 = self.__convert_string_with_line_number_to_type(op2)
-        t1 = type(op1)
         t2 = type(op2)
         # print(operator, op1, t1, op2, t2)
         if operator == '+':
@@ -273,12 +280,23 @@ class ObjectDefinition:
                 sys.exit()
             return op1 // op2
         elif operator == '==':
-            if t1 != t2 and (
-                op1 != self.super.NULL_DEF or t2 == ObjectDefinition
+            if (
+                t1 != t2
+                and (op1 is not None or t2 != ObjectDefinition)
+                and (t1 is not ObjectDefinition or op2 is not None)
             ):
                 self.super.error(ErrorType(1))
                 sys.exit()
             return op1 == op2
+        elif operator == '!=':
+            if (
+                t1 != t2
+                and (op1 is not None or t2 != ObjectDefinition)
+                and (t1 is not ObjectDefinition or op2 is not None)
+            ):
+                self.super.error(ErrorType(1))
+                sys.exit()
+            return op1 != op2
         elif operator == '>=':
             if (
                 t1 != t2
@@ -315,15 +333,6 @@ class ObjectDefinition:
                 self.super.error(ErrorType(1))
                 sys.exit()
             return op1 < op2
-        elif operator == '!=':
-            if (
-                t1 != t2
-                or not isinstance(op1, int)
-                and not isinstance(op1, str)
-            ):
-                self.super.error(ErrorType(1))
-                sys.exit()
-            return op1 != op2
         elif operator == '&':
             if t1 is not bool or t2 is not bool:
                 self.super.error(ErrorType(1))
