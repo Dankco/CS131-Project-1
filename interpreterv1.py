@@ -22,8 +22,8 @@ class Interpreter(InterpreterBase):
         self.__discover_all_classes_and_track_them()
         class_def = self.__find_definition_for_class("main")
         obj = class_def.instantiate_object(super())
-        result = obj.call_method("main")
-        return result
+        obj.call_method("main")
+        return
 
     def __discover_all_classes_and_track_them(self):
         for class_def in self.parsed_program:
@@ -62,17 +62,39 @@ class ClassDefinition:
         return obj
 
 
+class Method:
+    def __init__(self, parameters, top_statement):
+        self.parameters = parameters
+        self.top_statement = top_statement
+
+    def get_top_level_statement(self):
+        return self.top_statement
+
+    def get_parameters(self):
+        return self.parameters
+
+
 class ObjectDefinition:
     def __init__(self, base):
         self.super = base
         self.fields = {}
         self.methods = {}
+        self.params = []
 
     # Interpret the specified method using the provided parameters
-    def call_method(self, method_name, parameters=None):
+    def call_method(self, method_name, parameters=[]):
         method = self.__find_method(method_name)
+        params = method.get_parameters()
+        if len(params) != len(parameters):
+            self.super.error(ErrorType(2))
+            sys.exit()
+        new_params = {}
+        for i in range(len(parameters)):
+            new_params[params[i]] = self.__evaluate_expression(parameters[i])
+        self.params.append(new_params)
         statement = method.get_top_level_statement()
         result = self.__run_statement(statement)
+        self.params.pop()
         return result
 
     def add_field(self, f_name, f_value):
@@ -83,6 +105,8 @@ class ObjectDefinition:
         self.methods[method_name] = method
 
     def __find_method(self, method_name):
+        if method_name not in self.methods:
+            self.super.error(ErrorType(2))
         return self.methods[method_name]
 
     # runs/interprets the passed-in statement until completion and
@@ -118,7 +142,6 @@ class ObjectDefinition:
             res = self.__run_statement(state)
             if res:
                 return res
-        return
 
     def __execute_print_statement(self, statement):
         output = ''
@@ -140,7 +163,6 @@ class ObjectDefinition:
                     txt = self.super.FALSE_DEF
             output += str(txt)
         self.super.output(output)
-        return
 
     def __execute_input_statement(self, statement):
         input = self.super.get_input()
@@ -150,13 +172,11 @@ class ObjectDefinition:
         if statement[0] == self.super.INPUT_INT_DEF:
             self.fields[statement[1]] = int(input)
         else:
-            print(input)
             self.fields[statement[1]] = f'"{input}"'
 
     def __execute_call_statement(self, statement):
         if statement[1] == self.super.ME_DEF:
-            self.call_method(statement[2], statement[3:])
-        return
+            return self.call_method(statement[2], statement[3:])
 
     def __execute_while_statement(self, statement):
         condition = self.__evaluate_expression(statement[1])
@@ -164,26 +184,28 @@ class ObjectDefinition:
             self.super.error(ErrorType(1))
             sys.exit()
         while condition:
-            self.__run_statement(statement[2])
+            res = self.__run_statement(statement[2])
+            if res:
+                return res
             condition = self.__evaluate_expression(statement[1])
             if type(condition) is not bool:
                 self.super.error(ErrorType(1))
                 sys.exit()
-        return
 
     def __execute_if_statement(self, statement):
-        if self.__evaluate_expression(statement[1]) is not bool:
+        condition = self.__evaluate_expression(statement[1])
+        # print(condition, type(condition), type(condition) is not bool)
+        if type(condition) is not bool:
             self.super.error(ErrorType(1))
             sys.exit()
-        if self.__evaluate_expression(statement[1]):
-            self.__run_statement(statement[2])
+        if condition:
+            return self.__run_statement(statement[2])
         else:
-            self.__run_statement(statement[3])
+            return self.__run_statement(statement[3])
 
     def __execute_return_statement(self, statement):
         if statement[1]:
             return self.__evaluate_expression(statement[1])
-        return
 
     def __execute_set_statement(self, statement):
         val = self.__evaluate_expression(statement[2])
@@ -201,8 +223,6 @@ class ObjectDefinition:
             return True
         elif value == self.super.FALSE_DEF:
             return False
-        elif value == self.super.NULL_DEF:
-            return None
         else:
             return int(value)
 
@@ -211,15 +231,20 @@ class ObjectDefinition:
             expr = expression
             if expression in self.fields:
                 expr = self.fields[expression]
+            if expression in self.params[-1]:
+                expr = self.params[-1][expression]
             return self.__convert_string_with_line_number_to_type(expr)
+        operator = expression[0]
+        if operator == self.super.CALL_DEF:
+            res = self.call_method(expression[2], expression[3:])
+            return res
         op1 = self.__evaluate_expression(expression[1])
         op1 = self.__convert_string_with_line_number_to_type(op1)
         op2 = self.__evaluate_expression(expression[2])
         op2 = self.__convert_string_with_line_number_to_type(op2)
         t1 = type(op1)
         t2 = type(op2)
-        # print(op1, t1, isinstance(op1, int), op2, t2, isinstance(op2, int))
-        operator = expression[0]
+        # print(operator, op1, t1, op2, t2)
         if operator == '+':
             if (not isinstance(op1, int) or not isinstance(op2, int)) and (
                 not isinstance(op1, str) or not isinstance(op2, str)
@@ -309,12 +334,3 @@ class ObjectDefinition:
                 self.super.error(ErrorType(1))
                 sys.exit()
             return op1 or op2
-
-
-class Method:
-    def __init__(self, parameters, statements):
-        self.parameters = parameters
-        self.statements = statements
-
-    def get_top_level_statement(self):
-        return self.statements
