@@ -47,6 +47,9 @@ class Interpreter(InterpreterBase):
             self.classes_dict[class_def[1]] = class_dict
 
     def __find_definition_for_class(self, c):
+        if c not in self.classes_dict:
+            super().error(ErrorType(1))
+            sys.exit()
         return ClassDefinition(self.classes_dict[c])
 
     def print_line_nums(parsed_program):
@@ -246,7 +249,10 @@ class ObjectDefinition:
         try:
             return int(value)
         except ValueError:
-            return str(value)
+            if str(value) in self.classes_dict:
+                return str(value)
+            self.super.error(ErrorType(2))
+            sys.exit()
 
     def __evaluate_expression(self, expression):
         if type(expression) != list:
@@ -259,6 +265,13 @@ class ObjectDefinition:
         operator = expression[0]
         if operator == self.super.CALL_DEF:
             return self.__execute_call_statement(expression)
+        elif operator == self.super.NEW_DEF:
+            if expression[1] not in self.classes_dict:
+                self.super.error(ErrorType(1))
+                sys.exit()
+            class_def = ClassDefinition(self.classes_dict[expression[1]])
+            obj = class_def.instantiate_object(self.classes_dict, self.super)
+            return obj
         op1 = self.__evaluate_expression(expression[1])
         op1 = self.__convert_string_with_line_number_to_type(op1)
         t1 = type(op1)
@@ -267,13 +280,6 @@ class ObjectDefinition:
                 self.super.error(ErrorType(1))
                 sys.exit()
             return not t1
-        elif operator == self.super.NEW_DEF:
-            if op1 not in self.classes_dict:
-                self.super.error(ErrorType(1))
-                sys.exit()
-            class_def = ClassDefinition(self.classes_dict[op1])
-            obj = class_def.instantiate_object(self.classes_dict, self.super)
-            return obj
         op2 = self.__evaluate_expression(expression[2])
         op2 = self.__convert_string_with_line_number_to_type(op2)
         t2 = type(op2)
@@ -286,6 +292,12 @@ class ObjectDefinition:
             ):
                 self.super.error(ErrorType(1))
                 sys.exit()
+            if isinstance(op1, int):
+                return op1 + op2
+            if op1.endswith('"'):
+                op1 = op1[:-1]
+            if op2.startswith('"'):
+                op2 = op2[1:]
             return op1 + op2
         elif operator == '-':
             if not isinstance(op1, int) or not isinstance(op2, int):
