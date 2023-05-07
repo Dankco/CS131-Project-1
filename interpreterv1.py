@@ -106,7 +106,7 @@ class ObjectDefinition:
             new_params[params[i]] = self.__evaluate_expression(parameters[i])
         self.params.append(new_params)
         statement = method.get_top_level_statement()
-        result = self.__run_statement(statement)
+        result = self.__run_statement(statement)[0]
         self.params.pop()
         return result
 
@@ -126,36 +126,40 @@ class ObjectDefinition:
     # runs/interprets the passed-in statement until completion and
     # gets the result, if any
     def __run_statement(self, statement):
+        result = None
+        returned = False
         if statement[0] == self.super.PRINT_DEF:
-            result = self.__execute_print_statement(statement)
+            self.__execute_print_statement(statement)
         elif (
             statement[0] == self.super.INPUT_STRING_DEF
             or statement[0] == self.super.INPUT_INT_DEF
         ):
-            result = self.__execute_input_statement(statement)
+            self.__execute_input_statement(statement)
         elif statement[0] == self.super.SET_DEF:
-            result = self.__execute_set_statement(statement)
+            self.__execute_set_statement(statement)
         elif statement[0] == self.super.CALL_DEF:
-            result = self.__execute_call_statement(statement)
+            self.__execute_call_statement(statement)
         elif statement[0] == self.super.WHILE_DEF:
-            result = self.__execute_while_statement(statement)
+            result, returned = self.__execute_while_statement(statement)
         elif statement[0] == self.super.IF_DEF:
-            result = self.__execute_if_statement(statement)
+            result, returned = self.__execute_if_statement(statement)
         elif statement[0] == self.super.RETURN_DEF:
-            result = self.__execute_return_statement(statement)
+            result, returned = self.__execute_return_statement(statement)
         elif statement[0] == self.super.BEGIN_DEF:
-            result = self.__execute_all_sub_statements_of_begin_statement(
-                statement
-            )
-        return result
+            (
+                result,
+                returned,
+            ) = self.__execute_all_sub_statements_of_begin_statement(statement)
+        return result, returned
 
     def __execute_all_sub_statements_of_begin_statement(self, statement):
         for state in statement:
             if state == self.super.BEGIN_DEF:
                 continue
-            res = self.__run_statement(state)
-            if res:
-                return res
+            res, returned = self.__run_statement(state)
+            if res is not None or returned:
+                return res, returned
+        return None, None
 
     def __execute_print_statement(self, statement):
         output = ''
@@ -194,7 +198,8 @@ class ObjectDefinition:
         obj = self.__evaluate_expression(statement[1])
         if obj is None:
             self.super.error(ErrorType(4))
-        return obj.call_method(statement[2], statement[3:])
+        res = obj.call_method(statement[2], statement[3:])
+        return res
 
     def __execute_while_statement(self, statement):
         condition = self.__evaluate_expression(statement[1])
@@ -202,13 +207,14 @@ class ObjectDefinition:
             self.super.error(ErrorType(1))
             sys.exit()
         while condition:
-            res = self.__run_statement(statement[2])
-            if res:
-                return res
+            res, returned = self.__run_statement(statement[2])
+            if res is not None or returned:
+                return res, returned
             condition = self.__evaluate_expression(statement[1])
             if type(condition) is not bool:
                 self.super.error(ErrorType(1))
                 sys.exit()
+        return None, None
 
     def __execute_if_statement(self, statement):
         condition = self.__evaluate_expression(statement[1])
@@ -218,12 +224,14 @@ class ObjectDefinition:
             sys.exit()
         if condition:
             return self.__run_statement(statement[2])
-        else:
+        elif len(statement) == 4:
             return self.__run_statement(statement[3])
+        return None, None
 
     def __execute_return_statement(self, statement):
-        if statement[1]:
-            return self.__evaluate_expression(statement[1])
+        if len(statement) == 2:
+            return self.__evaluate_expression(statement[1]), True
+        return None, True
 
     def __execute_set_statement(self, statement):
         val = self.__evaluate_expression(statement[2])

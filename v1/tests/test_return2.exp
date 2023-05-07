@@ -1,0 +1,9 @@
+inside main
+inside looper, x = 0 and x < 100: true
+x: 1
+x: 2
+x: 3
+x: 4
+x: 5
+7
+back inside main

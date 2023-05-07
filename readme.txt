@@ -1,0 +1,1 @@
+There is a bug somewhere with initiating multiple objects, but all good otherwise.

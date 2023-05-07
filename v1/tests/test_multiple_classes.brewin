@@ -3,7 +3,7 @@
    (field age 0)
    (method init (n a) (begin (set name n) (set age a)))
    (method talk (to_whom) (print name " says hello to " to_whom (+ to_whom "dfs")))
-   (method get_age () (return age))
+   (method get_age () (begin (return age) (set age 5) (return age)))
 )
 
 (class main
@@ -16,6 +16,7 @@
       (set p (new person))    
       (call p init "Siddarth" 25)  # calling method in other object
       (call p talk "Boyan")        # calling method in other object
+      (call (new person) get_age)
       (print "Siddarth's age is " (call p get_age))
    )
  )

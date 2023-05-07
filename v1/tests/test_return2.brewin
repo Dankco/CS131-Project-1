@@ -1,0 +1,24 @@
+(class main
+ (field x "abc")
+ (method main ()
+  (begin
+   (print "inside main")
+   (call me looper 0)
+   (print "back inside main")
+  )
+ )
+ (method looper (x) 
+   (begin
+     (print "inside looper, x = " x " and x < 100: " (< x 100))
+     (while (< x 100)
+       (begin
+         (set x (+ x 1))
+         (print "x: " x)
+         (if (== x 5)
+            (begin (print (+ 5 2)) (return) (print 5))
+         )
+       )
+     )
+   )
+ )
+)
