@@ -1,0 +1,15 @@
+(class main
+  (field x 0)
+  (method main ()
+    (begin
+      (set x (call me setX (* 3 (+ 5 6))))
+      (print x)
+    )
+  )
+  (method setX (y)
+    (begin
+      (set x y)
+      (return 123)
+    )
+  )
+)

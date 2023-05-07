@@ -1,0 +1,21 @@
+(class main
+  (field other null)
+  (field x 5)
+  (method main ()
+    (begin
+      (set other (new other_class))
+      (call other foo x)
+      (print x)
+    )
+  )
+)
+
+(class other_class
+  (field a 10)
+  (method foo (q)
+    (begin
+      (set q 10)
+      (print q)
+    )
+  )
+)

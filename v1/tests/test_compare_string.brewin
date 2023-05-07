@@ -1,0 +1,8 @@
+(class main
+  (field num 0)
+  (method main ()
+    (begin
+      (if (<= "a" "b") (print 1))
+    )
+  )
+)

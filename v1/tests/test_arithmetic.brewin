@@ -1,0 +1,10 @@
+(class main
+  (field x 20)
+  (field y 2)
+  (method main ()
+    (call me math 3 4 5)
+  )
+  (method math (a b c)
+      (print (+ (- b a) (* (/ x y) (% 7 c))))
+  )
+)

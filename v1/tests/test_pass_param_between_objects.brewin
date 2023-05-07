@@ -1,0 +1,21 @@
+(class main
+ (field x null)
+ (field y null)
+ (field z "bark")
+ (method main ()
+   (begin
+     (set x (new dog))
+     (set y (call x bark z))
+     (print y)
+   )
+ )
+)
+
+(class dog
+  (method bark (x)
+    (begin
+      (print x)
+      (return "woof")
+    )
+  )
+)

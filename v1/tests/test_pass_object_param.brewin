@@ -1,0 +1,23 @@
+(class main
+ (field mydog null)
+ (field mycat null)
+ (method main ()
+   (begin
+     (set mydog (new dog))
+     (set mycat (new cat))
+     (call mydog bite mycat)
+   )
+ )
+)
+
+(class dog
+  (method bite (cat)
+      (call cat getbiten)
+  )
+)
+
+(class cat
+  (method getbiten ()
+    (print "ouch")
+  )
+)

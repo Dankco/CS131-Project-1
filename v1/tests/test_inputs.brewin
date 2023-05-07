@@ -1,9 +1,14 @@
 (class main
-        (field x 0)
-        (method main () 
-          (begin
-           (inputs x)
-           (print "the user typed in " x)
-         )
+ (field x 0)
+ (method main ()
+  (call me test "")
+ )
+ (method test (y)
+  (begin
+   (inputi x)
+   (print x)
+   (inputi y)
+   (print y)
   )
+ )
 )

@@ -1,0 +1,19 @@
+(class main
+  (field myCat null)
+  (method main ()
+    (begin
+      (set myCat (call me getCat))
+      (call myCat meow)
+    )
+  )
+  (method getCat ()
+    (return (new cat))
+  )
+)
+
+(class cat
+  (field x 0)
+  (method meow ()
+    (print "meow")
+  )
+)

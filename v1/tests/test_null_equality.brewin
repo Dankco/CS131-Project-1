@@ -1,0 +1,6 @@
+(class main
+  (field x null)
+  (method main ()
+    (print (== x null))
+  )
+)

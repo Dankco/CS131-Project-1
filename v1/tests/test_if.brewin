@@ -1,0 +1,7 @@
+(class main
+  (method main ()
+    (if true
+      (print "hello")
+    )
+  )
+)

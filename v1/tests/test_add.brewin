@@ -1,0 +1,9 @@
+(class main
+  (field x 1)
+  (method main ()
+    (call me add 1)
+  )
+  (method add (y)
+    (print (+ x y))
+  )
+)

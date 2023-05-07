@@ -1,0 +1,5 @@
+(class main
+    (field x 10)
+    (method bar (x) (print x))  # prints 5
+    (method main () (call me bar 5))
+)

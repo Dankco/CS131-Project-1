@@ -1,0 +1,18 @@
+(class main
+      (field other null)
+      (field result 0)
+      (method main ()
+(begin
+          (call me foo 10 20)
+      (set other (new other_class))
+      (call other foo 5 6)  # call foo method in other object
+      (print "square: " (call other square 10)) # call expression
+    )
+  )
+  (method foo (a b)
+(print a b) )
+)
+(class other_class
+  (method foo (q r) (print q r))
+  (method square (q) (return (* q q)))
+)

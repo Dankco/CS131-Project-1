@@ -70,7 +70,7 @@ class ClassDefinition:
         for method_name, method in self.my_methods.items():
             obj.add_method(method_name, method)
         for f_name, f_value in self.my_fields.items():
-            obj.add_field(f_name, f_value)
+            obj.add_field(str(f_name), f_value)
         return obj
 
 
@@ -103,7 +103,7 @@ class ObjectDefinition:
             sys.exit()
         new_params = {}
         for i in range(len(parameters)):
-            new_params[params[i]] = self.__evaluate_expression(parameters[i])
+            new_params[params[i]] = parameters[i]
         self.params.append(new_params)
         statement = method.get_top_level_statement()
         result = self.__run_statement(statement)[0]
@@ -184,21 +184,30 @@ class ObjectDefinition:
 
     def __execute_input_statement(self, statement):
         input = self.super.get_input()
-        if statement[1] not in self.fields:
+        if statement[1] in self.params[-1]:
+            self.params[-1][statement[1]] = (
+                int(input)
+                if statement[0] == self.super.INPUT_INT_DEF
+                else str(input)
+            )
+        elif statement[1] in self.fields:
+            self.fields[statement[1]] = (
+                int(input)
+                if statement[0] == self.super.INPUT_INT_DEF
+                else str(input)
+            )
+        else:
             self.super.error(ErrorType(2))
             sys.exit()
-        if statement[0] == self.super.INPUT_INT_DEF:
-            self.fields[statement[1]] = int(input)
-        else:
-            self.fields[statement[1]] = f'"{input}"'
 
     def __execute_call_statement(self, statement):
+        params = [self.__evaluate_expression(param) for param in statement[3:]]
         if statement[1] == self.super.ME_DEF:
-            return self.call_method(statement[2], statement[3:])
+            return self.call_method(statement[2], params)
         obj = self.__evaluate_expression(statement[1])
         if type(obj) is Nothing:
             self.super.error(ErrorType(4))
-        res = obj.call_method(statement[2], statement[3:])
+        res = obj.call_method(statement[2], params)
         return res
 
     def __execute_while_statement(self, statement):
@@ -335,7 +344,7 @@ class ObjectDefinition:
             ):
                 self.super.error(ErrorType(1))
                 sys.exit()
-            if t1 is Nothing or t1 is ObjectDefinition:
+            if t1 is Nothing or t2 is Nothing:
                 return t1 == t2
             return op1 == op2
         elif operator == '!=':
@@ -346,7 +355,7 @@ class ObjectDefinition:
             ):
                 self.super.error(ErrorType(1))
                 sys.exit()
-            if t1 is Nothing or t1 is ObjectDefinition:
+            if t1 is Nothing or t2 is Nothing:
                 return t1 != t2
             return op1 != op2
         elif operator == '>=':

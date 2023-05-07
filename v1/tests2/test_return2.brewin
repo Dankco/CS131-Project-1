@@ -1,0 +1,48 @@
+(class main
+  (field num 0)
+  (field result 1)
+  (field obj null)
+  (field o2 null)
+  (method main ()
+    (begin
+       (begin
+       (set obj (new c))
+       (set o2 (call (call obj f) f))
+       (print (== o2 obj) (call (call o2 f) type))
+       (print (call (call (call me copy) copy) f -30) )
+       (return 4)
+       (call me f -1)
+      )
+     )
+  )
+  (method type () (return "main"))
+  (method f (num)
+    (begin
+      (print num)
+      (return 0)))
+  (method copy ()
+  (return (new main)))
+)
+(class c 
+ (field num 0)
+ (method main () 
+  (begin
+   (print num)
+    (return -20)
+  )
+ )
+ (method f () 
+  (begin
+   (if (< num 10) 
+    (begin
+      (print num)
+     (set num (+ num 1))
+     (call (new main) f -2)
+     (return (call me f))
+    )
+   )
+    (return (new c))
+  )
+ )
+  (method type () (return "c"))
+)

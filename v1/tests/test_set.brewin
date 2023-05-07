@@ -1,0 +1,15 @@
+(class main
+  (field x 0)
+  (method foo (y z)
+    (begin
+      (set x 1)
+      (set y 2)
+      (print x)
+      (print y)
+      (print z)
+    )
+  )
+  (method main ()
+    (call me foo 3 3)
+  )
+)

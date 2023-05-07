@@ -1,0 +1,16 @@
+(class main
+  (field x null)
+  (method main ()
+    (begin
+      (set x (new hi))
+      (if (== x null) (print 1) (print 2))
+    )
+  )
+)
+
+(class hi
+  (field x 0)
+  (method func ()
+    (print 1)
+  )
+)
