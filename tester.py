@@ -130,6 +130,7 @@ def generate_test_suite_v1():
             "test_set_field",
             "test_while",
             "test_multiple_classes",
+            "test_return",
         ],
         [
             "test_if",

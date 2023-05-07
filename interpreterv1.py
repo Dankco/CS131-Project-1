@@ -224,10 +224,13 @@ class ObjectDefinition:
 
     def __execute_set_statement(self, statement):
         val = self.__evaluate_expression(statement[2])
-        if statement[1] not in self.fields:
+        if statement[1] in self.params[-1]:
+            self.params[-1][statement[1]] = val
+        elif statement[1] in self.fields:
+            self.fields[statement[1]] = val
+        else:
             self.super.error(ErrorType(2))
             sys.exit()
-        self.fields[statement[1]] = val
 
     def __convert_string_with_line_number_to_type(self, value):
         if type(value) != StringWithLineNumber:
@@ -255,8 +258,7 @@ class ObjectDefinition:
             return self.__convert_string_with_line_number_to_type(expr)
         operator = expression[0]
         if operator == self.super.CALL_DEF:
-            res = self.call_method(expression[2], expression[3:])
-            return res
+            return self.__execute_call_statement(expression)
         op1 = self.__evaluate_expression(expression[1])
         op1 = self.__convert_string_with_line_number_to_type(op1)
         t1 = type(op1)
@@ -277,8 +279,10 @@ class ObjectDefinition:
         t2 = type(op2)
         # print(operator, op1, t1, op2, t2)
         if operator == '+':
-            if (not isinstance(op1, int) or not isinstance(op2, int)) and (
-                not isinstance(op1, str) or not isinstance(op2, str)
+            if (
+                t1 is not t2
+                or not isinstance(op1, int)
+                and not isinstance(op1, str)
             ):
                 self.super.error(ErrorType(1))
                 sys.exit()
