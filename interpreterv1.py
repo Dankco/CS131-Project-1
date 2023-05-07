@@ -33,9 +33,15 @@ class Interpreter(InterpreterBase):
             class_dict = {'fields': {}, 'methods': {}}
             for item in class_def:
                 if item[0] == super().FIELD_DEF:
+                    if item[1] in class_dict['fields']:
+                        super().error(ErrorType(2))
+                        sys.exit()
                     class_dict['fields'][item[1]] = item[2]
                     # handle a field
                 elif item[0] == super().METHOD_DEF:
+                    if item[1] in class_dict['methods']:
+                        super().error(ErrorType(2))
+                        sys.exit()
                     class_dict['methods'][item[1]] = Method(item[2], item[3])
                     # handle a method
             self.classes_dict[class_def[1]] = class_dict
@@ -90,7 +96,7 @@ class ObjectDefinition:
         method = self.__find_method(method_name)
         params = method.get_parameters()
         if len(params) != len(parameters):
-            self.super.error(ErrorType(2))
+            self.super.error(ErrorType(1))
             sys.exit()
         new_params = {}
         for i in range(len(parameters)):
@@ -106,13 +112,12 @@ class ObjectDefinition:
         self.fields[f_name] = val
 
     def add_method(self, method_name, method):
-        if method_name in self.methods:
-            self.super.error(ErrorType(2))
         self.methods[method_name] = method
 
     def __find_method(self, method_name):
         if method_name not in self.methods:
             self.super.error(ErrorType(2))
+            sys.exit()
         return self.methods[method_name]
 
     # runs/interprets the passed-in statement until completion and
@@ -183,9 +188,10 @@ class ObjectDefinition:
     def __execute_call_statement(self, statement):
         if statement[1] == self.super.ME_DEF:
             return self.call_method(statement[2], statement[3:])
-        return self.__evaluate_expression(statement[1]).call_method(
-            statement[2], statement[3:]
-        )
+        obj = self.__evaluate_expression(statement[1])
+        if obj is None:
+            self.super.error(ErrorType(4))
+        return obj.call_method(statement[2], statement[3:])
 
     def __execute_while_statement(self, statement):
         condition = self.__evaluate_expression(statement[1])
