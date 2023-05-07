@@ -3,10 +3,12 @@
  (method main ()
   (begin
    (print "inside main")
-   (call me looper 0)
-   (print "back inside main")
+   (set x (call (new loops)  looper 0))
+   (print "back inside main" x)
   )
  )
+ )
+(class loops
  (method looper (x) 
    (begin
      (print "inside looper, x = " x " and x < 100: " (< x 100))
@@ -15,10 +17,17 @@
          (set x (+ x 1))
          (print "x: " x)
          (if (== x 5)
-            (begin (print (+ 5 2)) (return) (print 5))
+           (begin (print (+ 5 2)) (return (call (new oops) ops 1 2)) (print 5))
          )
        )
      )
    )
  )
+)
+(class oops
+  (method ops (a b)
+    (begin
+      (return (+ a b))
+      )
+  )
 )
