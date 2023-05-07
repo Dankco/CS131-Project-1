@@ -133,6 +133,7 @@ def generate_test_suite_v1():
             "test_return",
             "test_return2",
             "test_null",
+            "test_new",
         ],
         [
             "test_if",

@@ -218,7 +218,7 @@ class ObjectDefinition:
 
     def __execute_if_statement(self, statement):
         condition = self.__evaluate_expression(statement[1])
-        print(condition, type(condition), type(condition) is not bool)
+        # print(condition, type(condition), type(condition) is not bool)
         if type(condition) is not bool:
             self.super.error(ErrorType(1))
             sys.exit()
@@ -291,7 +291,7 @@ class ObjectDefinition:
         op2 = self.__evaluate_expression(expression[2])
         op2 = self.__convert_string_with_line_number_to_type(op2)
         t2 = type(op2)
-        print(operator, op1, t1, op2, t2)
+        # print(operator, op1, t1, op2, t2)
         if operator == '+':
             if (
                 t1 is not t2

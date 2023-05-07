@@ -1,0 +1,21 @@
+(class main
+  (field other null)
+  (field x 9)
+  (method main ()
+    (begin
+      (if (<= x 10) (set x (+ x 1)) (set x (- x 1)))
+      (print x)
+      (set other (new other_class))
+      (call other foo 5 6)
+    )
+  )
+)
+
+(class other_class
+  (field a 10)
+  (method foo (q r)
+  (begin 
+    (print (+ q r))
+    (print (+ a (+ q r))))
+  )
+)

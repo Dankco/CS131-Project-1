@@ -1,9 +1,13 @@
 inside main
 inside looper, x = 0 and x < 100: true
 x: 1
+asef
 x: 2
+asef
 x: 3
+asef
 x: 4
+asef
 x: 5
 7
 back inside main3
