@@ -1,9 +1,17 @@
 (class main
-  (method fact (n)
-   (if (== n 1)
-     (return 1)
-     (return (* n (call me fact (- n 1))))
-   )
-  )
-  (method main () (print (call me fact 5)))
-)
+  (field num 0)
+  (field result 1)
+  (method main ()
+    (begin
+      (print "Enter a number: ")
+      (inputi num)
+      (print num " factorial is " (call me factorial num))))
+
+  (method factorial (n)
+    (begin
+      (set result 1)
+      (while (> n 0)
+        (begin
+          (set result (* n result))
+          (set n (- n 1))))
+      (return result))))

@@ -196,7 +196,7 @@ class ObjectDefinition:
         if statement[1] == self.super.ME_DEF:
             return self.call_method(statement[2], statement[3:])
         obj = self.__evaluate_expression(statement[1])
-        if obj is None:
+        if type(obj) is Nothing:
             self.super.error(ErrorType(4))
         res = obj.call_method(statement[2], statement[3:])
         return res
@@ -218,7 +218,7 @@ class ObjectDefinition:
 
     def __execute_if_statement(self, statement):
         condition = self.__evaluate_expression(statement[1])
-        # print(condition, type(condition), type(condition) is not bool)
+        print(condition, type(condition), type(condition) is not bool)
         if type(condition) is not bool:
             self.super.error(ErrorType(1))
             sys.exit()
@@ -253,7 +253,7 @@ class ObjectDefinition:
         elif value == self.super.FALSE_DEF:
             return False
         elif value == self.super.NULL_DEF:
-            return None
+            return Nothing()
         try:
             return int(value)
         except ValueError:
@@ -291,7 +291,7 @@ class ObjectDefinition:
         op2 = self.__evaluate_expression(expression[2])
         op2 = self.__convert_string_with_line_number_to_type(op2)
         t2 = type(op2)
-        # print(operator, op1, t1, op2, t2)
+        print(operator, op1, t1, op2, t2)
         if operator == '+':
             if (
                 t1 is not t2
@@ -330,20 +330,24 @@ class ObjectDefinition:
         elif operator == '==':
             if (
                 t1 is not t2
-                and (op1 is not None or t2 != ObjectDefinition)
-                and (t1 is not ObjectDefinition or op2 is not None)
+                and (t1 is not Nothing or t2 is not ObjectDefinition)
+                and (t1 is not ObjectDefinition or t2 is not Nothing)
             ):
                 self.super.error(ErrorType(1))
                 sys.exit()
+            if t1 is Nothing or t1 is ObjectDefinition:
+                return t1 == t2
             return op1 == op2
         elif operator == '!=':
             if (
                 t1 is not t2
-                and (op1 is not None or t2 != ObjectDefinition)
-                and (t1 is not ObjectDefinition or op2 is not None)
+                and (t1 is not Nothing or t2 is not ObjectDefinition)
+                and (t1 is not ObjectDefinition or t2 is not Nothing)
             ):
                 self.super.error(ErrorType(1))
                 sys.exit()
+            if t1 is Nothing or t1 is ObjectDefinition:
+                return t1 != t2
             return op1 != op2
         elif operator == '>=':
             if (
@@ -391,3 +395,35 @@ class ObjectDefinition:
                 self.super.error(ErrorType(1))
                 sys.exit()
             return op1 or op2
+
+
+class Nothing:
+    def __init__(self):
+        pass
+
+
+def main():
+    program = """(class main
+  (field num 0)
+  (field result 1)
+  (method main ()
+    (begin
+      (print "Enter a number: ")
+      (inputi num)
+      (print num "factorial is " (call me factorial num))))
+
+  (method factorial (n)
+    (begin
+      (set result 1)
+      (while (> n 0)
+        (begin
+          (set result (* n result))
+          (set n (- n 1))))
+      (return result))))""".splitlines()
+
+    interpreter = Interpreter()
+    interpreter.run(program)
+
+
+if __name__ == '__main__':
+    main()

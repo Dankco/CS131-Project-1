@@ -12,7 +12,6 @@
  (method main ()
    (begin
       (call me tell_joke "Leia")  # calling method in the current obj
-      (print p)
       (set p (new person))    
       (call p init "Siddarth" 25)  # calling method in other object
       (call p talk "Boyan")        # calling method in other object

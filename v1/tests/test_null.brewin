@@ -1,0 +1,10 @@
+(class main
+ (field x 4)
+ (method main ()
+   (begin
+      (set x (new loop))    
+      (if (!= x null) (print "it's true") (print "it's false"))
+   )
+ )
+)
+(class loop)

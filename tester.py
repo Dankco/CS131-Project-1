@@ -132,6 +132,7 @@ def generate_test_suite_v1():
             "test_multiple_classes",
             "test_return",
             "test_return2",
+            "test_null",
         ],
         [
             "test_if",
