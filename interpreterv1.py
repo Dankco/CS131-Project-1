@@ -21,12 +21,15 @@ class Interpreter(InterpreterBase):
         self.parsed_program = parsed_program
         self.__discover_all_classes_and_track_them()
         class_def = self.__find_definition_for_class("main")
-        obj = class_def.instantiate_object(super())
+        obj = class_def.instantiate_object(self.classes_dict, super())
         obj.call_method("main")
         return
 
     def __discover_all_classes_and_track_them(self):
         for class_def in self.parsed_program:
+            if class_def[1] in self.classes_dict:
+                super().error(ErrorType(1))
+                sys.exit()
             class_dict = {'fields': {}, 'methods': {}}
             for item in class_def:
                 if item[0] == super().FIELD_DEF:
@@ -53,8 +56,8 @@ class ClassDefinition:
         self.my_fields = class_dict['fields']
 
     # uses the definition of a class to create and return an instance of it
-    def instantiate_object(self, base):
-        obj = ObjectDefinition(base)
+    def instantiate_object(self, classes_dict, base):
+        obj = ObjectDefinition(classes_dict, base)
         for method_name, method in self.my_methods.items():
             obj.add_method(method_name, method)
         for f_name, f_value in self.my_fields.items():
@@ -75,11 +78,12 @@ class Method:
 
 
 class ObjectDefinition:
-    def __init__(self, base):
+    def __init__(self, classes_dict, base):
         self.super = base
         self.fields = {}
         self.methods = {}
         self.params = []
+        self.classes_dict = classes_dict
 
     # Interpret the specified method using the provided parameters
     def call_method(self, method_name, parameters=[]):
@@ -102,6 +106,8 @@ class ObjectDefinition:
         self.fields[f_name] = val
 
     def add_method(self, method_name, method):
+        if method_name in self.methods:
+            self.super.error(ErrorType(2))
         self.methods[method_name] = method
 
     def __find_method(self, method_name):
@@ -177,6 +183,9 @@ class ObjectDefinition:
     def __execute_call_statement(self, statement):
         if statement[1] == self.super.ME_DEF:
             return self.call_method(statement[2], statement[3:])
+        return self.__evaluate_expression(statement[1]).call_method(
+            statement[2], statement[3:]
+        )
 
     def __execute_while_statement(self, statement):
         condition = self.__evaluate_expression(statement[1])
@@ -225,15 +234,17 @@ class ObjectDefinition:
             return False
         elif value == self.super.NULL_DEF:
             return None
-        else:
+        try:
             return int(value)
+        except ValueError:
+            return str(value)
 
     def __evaluate_expression(self, expression):
         if type(expression) != list:
             expr = expression
             if expression in self.fields:
                 expr = self.fields[expression]
-            if expression in self.params[-1]:
+            if self.params and expression in self.params[-1]:
                 expr = self.params[-1][expression]
             return self.__convert_string_with_line_number_to_type(expr)
         operator = expression[0]
@@ -248,6 +259,13 @@ class ObjectDefinition:
                 self.super.error(ErrorType(1))
                 sys.exit()
             return not t1
+        elif operator == self.super.NEW_DEF:
+            if op1 not in self.classes_dict:
+                self.super.error(ErrorType(1))
+                sys.exit()
+            class_def = ClassDefinition(self.classes_dict[op1])
+            obj = class_def.instantiate_object(self.classes_dict, self.super)
+            return obj
         op2 = self.__evaluate_expression(expression[2])
         op2 = self.__convert_string_with_line_number_to_type(op2)
         t2 = type(op2)
@@ -281,7 +299,7 @@ class ObjectDefinition:
             return op1 // op2
         elif operator == '==':
             if (
-                t1 != t2
+                t1 is not t2
                 and (op1 is not None or t2 != ObjectDefinition)
                 and (t1 is not ObjectDefinition or op2 is not None)
             ):
@@ -290,7 +308,7 @@ class ObjectDefinition:
             return op1 == op2
         elif operator == '!=':
             if (
-                t1 != t2
+                t1 is not t2
                 and (op1 is not None or t2 != ObjectDefinition)
                 and (t1 is not ObjectDefinition or op2 is not None)
             ):
@@ -299,7 +317,7 @@ class ObjectDefinition:
             return op1 != op2
         elif operator == '>=':
             if (
-                t1 != t2
+                t1 is not t2
                 or not isinstance(op1, int)
                 and not isinstance(op1, str)
             ):
@@ -308,7 +326,7 @@ class ObjectDefinition:
             return op1 >= op2
         elif operator == '<=':
             if (
-                t1 != t2
+                t1 is not t2
                 or not isinstance(op1, int)
                 and not isinstance(op1, str)
             ):
@@ -317,7 +335,7 @@ class ObjectDefinition:
             return op1 <= op2
         elif operator == '>':
             if (
-                t1 != t2
+                t1 is not t2
                 or not isinstance(op1, int)
                 and not isinstance(op1, str)
             ):
@@ -326,7 +344,7 @@ class ObjectDefinition:
             return op1 > op2
         elif operator == '<':
             if (
-                t1 != t2
+                t1 is not t2
                 or not isinstance(op1, int)
                 and not isinstance(op1, str)
             ):
